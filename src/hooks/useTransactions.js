@@ -1,21 +1,6 @@
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-
-// Nomes dos meses em português pra usar nos gráficos
-const MONTH_NAMES = [
-  "Jan",
-  "Fev",
-  "Mar",
-  "Abr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Set",
-  "Out",
-  "Nov",
-  "Dez",
-];
+import { MONTH_NAMES } from "@/constants/months";
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState(() => {
@@ -55,7 +40,6 @@ export function useTransactions() {
     setTransactions((prev) => prev.filter((t) => t.id !== id));
   }
 
-  // --- Estado derivado simples ---
   const totalIncome = transactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
@@ -66,12 +50,8 @@ export function useTransactions() {
 
   const balance = totalIncome - totalExpense;
 
-  // --- Dados para o gráfico de barras (receitas vs despesas por mês) ---
-  // Precisamos de um objeto assim:
-  // { "2024-01": { mes: "Jan", receitas: 3000, despesas: 1500 }, ... }
   const monthlyMap = transactions.reduce((acc, t) => {
     const date = new Date(t.date);
-    // Chave única por ano+mês — garante que Jan/2024 e Jan/2025 não se misturam
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     const monthName = `${MONTH_NAMES[date.getMonth()]}/${String(date.getFullYear()).slice(2)}`;
 
@@ -88,16 +68,12 @@ export function useTransactions() {
     return acc;
   }, {});
 
-  // Converte o objeto em array e ordena por data (a chave "2024-01" ordena corretamente)
   const monthlyData = Object.entries(monthlyMap)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, value]) => value);
 
-  // --- Dados para o gráfico de pizza (despesas por categoria) ---
-  // Precisamos de um array assim:
-  // [{ name: "Alimentação", valor: 800 }, { name: "Moradia", valor: 1200 }, ...]
   const categoryMap = transactions
-    .filter((t) => t.type === "expense") // só despesas fazem sentido no pizza
+    .filter((t) => t.type === "expense")
     .reduce((acc, t) => {
       acc[t.category] = (acc[t.category] || 0) + t.amount;
       return acc;

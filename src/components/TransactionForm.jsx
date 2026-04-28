@@ -12,36 +12,45 @@ import {
 } from "@/components/ui/select";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/constants/categories";
 
+const INITIAL_FORM = {
+  description: "",
+  amount: "",
+  type: "",
+  category: "",
+  error: "",
+};
+
 export default function TransactionForm({ onAdd }) {
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [type, setType] = useState("");
-  const [category, setCategory] = useState("");
-  const [error, setError] = useState("");
+  const [form, setForm] = useState(INITIAL_FORM);
+
+  function setField(field, value) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
 
   function handleTypeChange(value) {
-    setType(value);
-    setCategory("");
+    setForm((prev) => ({ ...prev, type: value, category: "" }));
   }
 
   function handleSubmit() {
-    if (!description.trim() || !amount || !type || !category) {
-      setError("Preencha todos os campos.");
+    if (
+      !form.description.trim() ||
+      !form.amount ||
+      !form.type ||
+      !form.category
+    ) {
+      setField("error", "Preencha todos os campos.");
       return;
     }
-    if (isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      setError("O valor deve ser um número positivo.");
+    if (isNaN(parseFloat(form.amount)) || parseFloat(form.amount) <= 0) {
+      setField("error", "O valor deve ser um número positivo.");
       return;
     }
-    setError("");
-    onAdd(description, amount, type, category);
-    setDescription("");
-    setAmount("");
-    setType("");
-    setCategory("");
+    onAdd(form.description, form.amount, form.type, form.category);
+    setForm(INITIAL_FORM);
   }
 
-  const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const categories =
+    form.type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
   return (
     <Card className="bg-zinc-900 border-zinc-800">
@@ -58,8 +67,8 @@ export default function TransactionForm({ onAdd }) {
           <Input
             id="description"
             placeholder="Ex: Aluguel, Salário..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={form.description}
+            onChange={(e) => setField("description", e.target.value)}
             className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
           />
         </div>
@@ -72,8 +81,8 @@ export default function TransactionForm({ onAdd }) {
             id="amount"
             type="number"
             placeholder="0,00"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            value={form.amount}
+            onChange={(e) => setField("amount", e.target.value)}
             className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
           />
         </div>
@@ -81,7 +90,7 @@ export default function TransactionForm({ onAdd }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-zinc-400">Tipo</Label>
-            <Select value={type} onValueChange={handleTypeChange}>
+            <Select value={form.type} onValueChange={handleTypeChange}>
               <SelectTrigger className="cursor-pointer bg-zinc-800 border-zinc-700 text-zinc-100">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
@@ -105,9 +114,9 @@ export default function TransactionForm({ onAdd }) {
           <div className="space-y-1.5">
             <Label className="text-zinc-400">Categoria</Label>
             <Select
-              value={category}
-              onValueChange={setCategory}
-              disabled={!type}
+              value={form.category}
+              onValueChange={(v) => setField("category", v)}
+              disabled={!form.type}
             >
               <SelectTrigger className="cursor-pointer bg-zinc-800 border-zinc-700 text-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed">
                 <SelectValue placeholder="Selecione..." />
@@ -127,7 +136,7 @@ export default function TransactionForm({ onAdd }) {
           </div>
         </div>
 
-        {error && <p className="text-red-400 text-xs">{error}</p>}
+        {form.error && <p className="text-red-400 text-xs">{form.error}</p>}
 
         <Button
           onClick={handleSubmit}
