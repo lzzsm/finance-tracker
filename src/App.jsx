@@ -10,6 +10,8 @@ export default function App() {
     totalIncome,
     totalExpense,
     balance,
+    monthlyData,
+    categoryData,
   } = useTransactions();
 
   return (
@@ -21,6 +23,8 @@ export default function App() {
       totalIncome={totalIncome}
       totalExpense={totalExpense}
       balance={balance}
+      monthlyData={monthlyData}
+      categoryData={categoryData}
     />
   );
 }
