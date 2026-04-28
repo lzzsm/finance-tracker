@@ -1,15 +1,16 @@
 # finance-tracker
 
-Aplicação de controle financeiro pessoal construída com React e shadcn/ui. Projeto desenvolvido com foco em boas práticas, componentização e UI consistente.
+Aplicação de controle financeiro pessoal construída com React e shadcn/ui. Projeto desenvolvido de forma progressiva — cada fase introduz novas tecnologias e conceitos.
 
-> Fase 1 de um projeto progressivo — cada fase introduz novas tecnologias e conceitos.
+## Stack atual
 
-## Stack
-
-- **React 19** — componentes funcionais e hooks
+- **React 19** — componentes funcionais, hooks e React Compiler
 - **Vite** — bundler e dev server
 - **Tailwind CSS v4** — estilização utility-first com tema escuro
 - **shadcn/ui** — biblioteca de componentes acessíveis e customizáveis
+- **React Hook Form** — gerenciamento de formulários performático
+- **Zod** — validação de schema com tipagem
+- **Recharts** — gráficos de barras e pizza
 - **uuid** — geração de IDs únicos por transação
 - **tailwind-merge** — merge seguro de classes Tailwind conflitantes
 - **lucide-react** — ícones
@@ -17,12 +18,13 @@ Aplicação de controle financeiro pessoal construída com React e shadcn/ui. Pr
 ## Funcionalidades
 
 - Adicionar transações com descrição, valor, tipo (receita/despesa) e categoria
-- Validação de formulário com feedback de erro
-- Editar transações via modal
+- Validação de formulário por campo com React Hook Form + Zod
+- Editar transações via modal com formulário pré-preenchido
 - Excluir transações com confirmação via AlertDialog
 - Cards de resumo com saldo total, receitas e despesas
+- Aba de Dashboard com gráfico de barras (receitas vs despesas por mês) e gráfico de pizza (despesas por categoria)
+- Fallback visual quando há apenas uma categoria de despesa
 - Persistência via `localStorage`
-- Estado vazio ilustrado quando não há transações
 
 ## Componentes shadcn utilizados
 
@@ -35,6 +37,7 @@ Aplicação de controle financeiro pessoal construída com React e shadcn/ui. Pr
 | `Select` | Seleção de tipo e categoria |
 | `Badge` | Exibição de categoria nas transações |
 | `Separator` | Divisor entre itens da lista |
+| `Tabs` | Alternância entre Transações e Dashboard |
 | `Dialog` | Modal de edição de transação |
 | `AlertDialog` | Confirmação de exclusão |
 
@@ -43,9 +46,24 @@ Aplicação de controle financeiro pessoal construída com React e shadcn/ui. Pr
 ```
 src/
 ├── components/
-│   └── ui/               ← componentes do shadcn/ui
+│   ├── charts/
+│   │   ├── CategoryChart.jsx
+│   │   └── MonthlyChart.jsx
+│   ├── ui/                    ← componentes do shadcn/ui
+│   ├── DeleteDialog.jsx
+│   ├── EditDialog.jsx
+│   ├── SummaryCards.jsx
+│   ├── TransactionForm.jsx
+│   └── TransactionList.jsx
+├── constants/
+│   ├── categories.js
+│   ├── months.js
+│   ├── schemas.js
+│   └── styles.js
 ├── hooks/
 │   └── useTransactions.js
+├── lib/
+│   └── formatters.js
 ├── pages/
 │   └── HomePage.jsx
 └── App.jsx
@@ -54,13 +72,19 @@ src/
 ## Decisões técnicas
 
 **Estado centralizado via `useTransactions`**
-Toda a lógica de estado (CRUD, persistência, cálculos derivados) vive no custom hook. O `App.jsx` apenas consome o hook e distribui via props, mantendo o arquivo focado em composição.
+Toda a lógica de estado (CRUD, persistência, cálculos derivados) vive no custom hook. O `App.jsx` apenas consome o hook e distribui via props.
 
 **Estado derivado sem `useState`**
-Saldo, total de receitas e total de despesas são calculados diretamente a partir do array de transações — sem estados paralelos que poderiam ficar dessincronizados.
+Saldo, total de receitas, total de despesas, dados mensais e dados por categoria são calculados diretamente a partir do array de transações.
+
+**React Hook Form + Zod**
+Formulários gerenciados pelo RHF com validação por schema Zod. `register()` para inputs nativos, `Controller` para o `Select` do shadcn. `useWatch()` em vez de `watch()` para compatibilidade com o React Compiler.
+
+**`key` prop no `EditDialog`**
+O `HomePage` passa `key={transaction.id}` no `EditDialog`, fazendo o React recriar o componente quando uma transação diferente é selecionada — inicializando o `useForm` com os valores corretos sem precisar de `useEffect`.
 
 **shadcn/ui como base de componentes**
-Os componentes do shadcn vivem em `src/components/ui/` e podem ser editados livremente. Nenhuma dependência de biblioteca externa no runtime — o código é seu.
+Os componentes do shadcn vivem em `src/components/ui/` e podem ser editados livremente.
 
 ## Como rodar
 
@@ -72,7 +96,7 @@ npm run dev
 ## Roadmap
 
 - [x] Fase 1 — React + shadcn/ui + localStorage
-- [ ] Fase 2 — Gráficos com Recharts
-- [ ] Fase 3 — Validação com React Hook Form + Zod
-- [ ] Fase 4 — Backend com Node + Express + SQLite
+- [x] Fase 2 — Gráficos com Recharts
+- [x] Fase 3 — Validação com React Hook Form + Zod
+- [ ] Fase 4 — Backend com Node + Express + MySQL
 - [ ] Fase 5 — Autenticação com JWT

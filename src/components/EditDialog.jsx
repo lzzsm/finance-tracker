@@ -1,4 +1,4 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -25,7 +25,6 @@ export default function EditDialog({ transaction, onSave, onClose }) {
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
     formState: { errors },
   } = useForm({
@@ -38,7 +37,7 @@ export default function EditDialog({ transaction, onSave, onClose }) {
     },
   });
 
-  const selectedType = watch("type");
+  const selectedType = useWatch({ control, name: "type" });
   const categories =
     selectedType === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 

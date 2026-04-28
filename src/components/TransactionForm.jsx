@@ -1,4 +1,4 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ export default function TransactionForm({ onAdd }) {
     register,
     handleSubmit,
     control,
-    watch,
     reset,
     setValue,
     formState: { errors },
@@ -33,7 +32,7 @@ export default function TransactionForm({ onAdd }) {
     },
   });
 
-  const selectedType = watch("type");
+  const selectedType = useWatch({ control, name: "type" });
   const categories =
     selectedType === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
