@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# SQLite
+server/finance.db
+server/finance.db-wal
+server/finance.db-shm

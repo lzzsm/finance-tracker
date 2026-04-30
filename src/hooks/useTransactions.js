@@ -1,43 +1,79 @@
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { MONTH_NAMES } from "@/constants/months";
+import { API_URL } from "@/constants/api";
 
 export function useTransactions() {
-  const [transactions, setTransactions] = useState(() => {
-    const stored = localStorage.getItem("transactions");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [mutationError, setMutationError] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-  }, [transactions]);
+    async function fetchTransactions() {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error("Erro ao buscar transações.");
+        const data = await response.json();
+        setTransactions(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  function addTransaction(description, amount, type, category) {
-    setTransactions((prev) => [
-      {
-        id: uuidv4(),
-        description,
-        amount: parseFloat(amount),
-        type,
-        category,
-        date: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
+    fetchTransactions();
+  }, []);
+
+  async function addTransaction(description, amount, type, category) {
+    setMutationError(null);
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description, amount, type, category }),
+      });
+
+      if (!response.ok) throw new Error("Erro ao adicionar transação.");
+
+      const newTransaction = await response.json();
+      setTransactions((prev) => [newTransaction, ...prev]);
+    } catch (err) {
+      setMutationError(err.message);
+    }
   }
 
-  function editTransaction(id, description, amount, type, category) {
-    setTransactions((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? { ...t, description, amount: parseFloat(amount), type, category }
-          : t,
-      ),
-    );
+  async function editTransaction(id, description, amount, type, category) {
+    setMutationError(null);
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description, amount, type, category }),
+      });
+
+      if (!response.ok) throw new Error("Erro ao editar transação.");
+
+      const updated = await response.json();
+      setTransactions((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    } catch (err) {
+      setMutationError(err.message);
+    }
   }
 
-  function deleteTransaction(id) {
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  async function deleteTransaction(id) {
+    setMutationError(null);
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Erro ao excluir transação.");
+
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    } catch (err) {
+      setMutationError(err.message);
+    }
   }
 
   const totalIncome = transactions
@@ -86,6 +122,9 @@ export function useTransactions() {
 
   return {
     transactions,
+    loading,
+    error,
+    mutationError,
     addTransaction,
     editTransaction,
     deleteTransaction,

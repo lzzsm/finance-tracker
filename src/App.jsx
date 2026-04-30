@@ -4,6 +4,9 @@ import HomePage from "./pages/HomePage";
 export default function App() {
   const {
     transactions,
+    loading,
+    error,
+    mutationError,
     addTransaction,
     editTransaction,
     deleteTransaction,
@@ -17,6 +20,9 @@ export default function App() {
   return (
     <HomePage
       transactions={transactions}
+      loading={loading}
+      error={error}
+      mutationError={mutationError}
       addTransaction={addTransaction}
       editTransaction={editTransaction}
       deleteTransaction={deleteTransaction}

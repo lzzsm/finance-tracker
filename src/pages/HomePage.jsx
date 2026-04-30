@@ -11,6 +11,9 @@ import { TAB_CLASS } from "@/constants/styles";
 
 export default function HomePage({
   transactions,
+  loading,
+  error,
+  mutationError,
   addTransaction,
   editTransaction,
   deleteTransaction,
@@ -28,6 +31,27 @@ export default function HomePage({
     setDeletingId(null);
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <p className="text-zinc-300 font-medium">
+            Erro ao conectar com o servidor.
+          </p>
+          <p className="text-zinc-600 text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <p className="text-zinc-500 text-sm">Carregando...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -37,6 +61,10 @@ export default function HomePage({
             Controle suas receitas e despesas
           </p>
         </div>
+
+        {mutationError && (
+          <p className="text-red-400 text-sm text-center">{mutationError}</p>
+        )}
 
         <SummaryCards
           balance={balance}
