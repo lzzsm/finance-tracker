@@ -1,102 +1,128 @@
 # finance-tracker
 
-Aplicação de controle financeiro pessoal construída com React e shadcn/ui. Projeto desenvolvido de forma progressiva — cada fase introduz novas tecnologias e conceitos.
+A personal finance tracking app built progressively — each phase introduces new technologies and concepts.
 
-## Stack atual
+## Stack
 
-- **React 19** — componentes funcionais, hooks e React Compiler
-- **Vite** — bundler e dev server
-- **Tailwind CSS v4** — estilização utility-first com tema escuro
-- **shadcn/ui** — biblioteca de componentes acessíveis e customizáveis
-- **React Hook Form** — gerenciamento de formulários performático
-- **Zod** — validação de schema com tipagem
-- **Recharts** — gráficos de barras e pizza
-- **uuid** — geração de IDs únicos por transação
-- **tailwind-merge** — merge seguro de classes Tailwind conflitantes
-- **lucide-react** — ícones
+**Frontend**
 
-## Funcionalidades
+- **React 19** — functional components, hooks and React Compiler
+- **Vite** — bundler and dev server
+- **Tailwind CSS v4** — utility-first styling with custom dark theme
+- **shadcn/ui** — accessible and customizable component library
+- **React Hook Form** — performant form management
+- **Zod** — schema validation
+- **Recharts** — bar and pie charts
+- **lucide-react** — icons
+- **tailwind-merge** — safe Tailwind class merging
+- **uuid** — unique ID generation
 
-- Adicionar transações com descrição, valor, tipo (receita/despesa) e categoria
-- Validação de formulário por campo com React Hook Form + Zod
-- Editar transações via modal com formulário pré-preenchido
-- Excluir transações com confirmação via AlertDialog
-- Cards de resumo com saldo total, receitas e despesas
-- Aba de Dashboard com gráfico de barras (receitas vs despesas por mês) e gráfico de pizza (despesas por categoria)
-- Fallback visual quando há apenas uma categoria de despesa
-- Persistência via `localStorage`
+**Backend**
 
-## Componentes shadcn utilizados
+- **Node.js + Express** — REST API
+- **SQLite (better-sqlite3)** — local database
+- **cors** — cross-origin request handling
 
-| Componente | Uso |
-|---|---|
-| `Card` | Cards de resumo e seções |
-| `Button` | Ações e submits |
-| `Input` | Campos de texto e valor |
-| `Label` | Labels acessíveis associados aos inputs |
-| `Select` | Seleção de tipo e categoria |
-| `Badge` | Exibição de categoria nas transações |
-| `Separator` | Divisor entre itens da lista |
-| `Tabs` | Alternância entre Transações e Dashboard |
-| `Dialog` | Modal de edição de transação |
-| `AlertDialog` | Confirmação de exclusão |
+## Features
 
-## Estrutura do projeto
+- Add transactions with description, amount, type (income/expense) and category
+- Per-field form validation with React Hook Form + Zod
+- Edit transactions via pre-filled modal
+- Delete transactions with AlertDialog confirmation
+- Summary cards with balance, total income and total expenses
+- Dashboard tab with monthly bar chart and category donut chart
+- Fallback UI when only one expense category exists
+- Data persisted in SQLite via REST API
+- Inline error feedback for failed API mutations
+
+## shadcn/ui components
+
+| Component     | Usage                                     |
+| ------------- | ----------------------------------------- |
+| `Card`        | Summary cards and section containers      |
+| `Button`      | Actions and form submits                  |
+| `Input`       | Text and number fields                    |
+| `Label`       | Accessible labels linked to inputs        |
+| `Select`      | Type and category selection               |
+| `Badge`       | Category tag on transaction rows          |
+| `Separator`   | Divider between list items                |
+| `Tabs`        | Toggle between Transactions and Dashboard |
+| `Dialog`      | Edit transaction modal                    |
+| `AlertDialog` | Delete confirmation modal                 |
+
+## Project structure
 
 ```
-src/
-├── components/
-│   ├── charts/
-│   │   ├── CategoryChart.jsx
-│   │   └── MonthlyChart.jsx
-│   ├── ui/                    ← componentes do shadcn/ui
-│   ├── DeleteDialog.jsx
-│   ├── EditDialog.jsx
-│   ├── SummaryCards.jsx
-│   ├── TransactionForm.jsx
-│   └── TransactionList.jsx
-├── constants/
-│   ├── categories.js
-│   ├── months.js
-│   ├── schemas.js
-│   └── styles.js
-├── hooks/
-│   └── useTransactions.js
-├── lib/
-│   └── formatters.js
-├── pages/
-│   └── HomePage.jsx
-└── App.jsx
+finance-tracker/
+├── server/
+│   ├── routes/
+│   │   └── transactions.js   ← GET, POST, PUT, DELETE
+│   ├── database.js           ← SQLite connection and table setup
+│   └── index.js              ← Express server entry point
+└── src/
+    ├── components/
+    │   ├── charts/
+    │   │   ├── CategoryChart.jsx
+    │   │   └── MonthlyChart.jsx
+    │   ├── ui/               ← shadcn/ui components
+    │   ├── DeleteDialog.jsx
+    │   ├── EditDialog.jsx
+    │   ├── SummaryCards.jsx
+    │   ├── TransactionForm.jsx
+    │   └── TransactionList.jsx
+    ├── constants/
+    │   ├── api.js
+    │   ├── categories.js
+    │   ├── months.js
+    │   ├── schemas.js
+    │   └── styles.js
+    ├── hooks/
+    │   └── useTransactions.js
+    ├── lib/
+    │   └── formatters.js
+    ├── pages/
+    │   └── HomePage.jsx
+    └── App.jsx
 ```
 
-## Decisões técnicas
+## Technical decisions
 
-**Estado centralizado via `useTransactions`**
-Toda a lógica de estado (CRUD, persistência, cálculos derivados) vive no custom hook. O `App.jsx` apenas consome o hook e distribui via props.
+**Centralized state via `useTransactions`**
+All state logic (CRUD, API calls, derived calculations) lives in the custom hook. `App.jsx` only consumes the hook and distributes data via props, keeping it focused on composition.
 
-**Estado derivado sem `useState`**
-Saldo, total de receitas, total de despesas, dados mensais e dados por categoria são calculados diretamente a partir do array de transações.
+**Derived state without `useState`**
+Balance, total income, total expenses, monthly chart data and category chart data are all calculated directly from the transactions array — no parallel state that could go out of sync.
 
 **React Hook Form + Zod**
-Formulários gerenciados pelo RHF com validação por schema Zod. `register()` para inputs nativos, `Controller` para o `Select` do shadcn. `useWatch()` em vez de `watch()` para compatibilidade com o React Compiler.
+Forms managed by RHF with Zod schema validation. `register()` for native inputs, `Controller` for shadcn `Select` components. `useWatch()` instead of `watch()` for React Compiler compatibility.
 
-**`key` prop no `EditDialog`**
-O `HomePage` passa `key={transaction.id}` no `EditDialog`, fazendo o React recriar o componente quando uma transação diferente é selecionada — inicializando o `useForm` com os valores corretos sem precisar de `useEffect`.
+**`key` prop on `EditDialog`**
+`HomePage` passes `key={transaction.id}` to `EditDialog`, causing React to remount the component when a different transaction is selected — initializing `useForm` with the correct values without needing a `useEffect`.
 
-**shadcn/ui como base de componentes**
-Os componentes do shadcn vivem em `src/components/ui/` e podem ser editados livremente.
+**Separated error states**
+`error` captures failures on the initial data fetch and renders a full error screen. `mutationError` captures failures on add/edit/delete and renders inline, without taking down the page.
 
-## Como rodar
+**REST API with Express**
+Four routes covering the full CRUD. Server-side validation on POST and PUT. PUT fetches the updated row after the UPDATE query to return all fields including `date` in the response.
+
+## Getting started
+
+Run both processes in separate terminals:
 
 ```bash
-npm install
+# frontend
 npm run dev
+
+# backend
+npm run server
 ```
+
+The frontend runs on `http://localhost:5173` and the backend on `http://localhost:3000`.
 
 ## Roadmap
 
-- [x] Fase 1 — React + shadcn/ui + localStorage
-- [x] Fase 2 — Gráficos com Recharts
-- [x] Fase 3 — Validação com React Hook Form + Zod
-- [ ] Fase 4 — Backend com Node + Express + MySQL
-- [ ] Fase 5 — Autenticação com JWT
+- [x] Phase 1 — React + shadcn/ui + localStorage
+- [x] Phase 2 — Charts with Recharts
+- [x] Phase 3 — Validation with React Hook Form + Zod
+- [x] Phase 4 — REST API with Node + Express + SQLite
+- [ ] Phase 5 — Authentication with JWT
