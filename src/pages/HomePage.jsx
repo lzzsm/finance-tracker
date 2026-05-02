@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { LogOut } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import SummaryCards from "@/components/SummaryCards";
 import TransactionForm from "@/components/TransactionForm";
 import TransactionList from "@/components/TransactionList";
@@ -22,6 +24,7 @@ export default function HomePage({
   balance,
   monthlyData,
   categoryData,
+  onLogout,
 }) {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
@@ -55,11 +58,21 @@ export default function HomePage({
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6">
       <div className="max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Finanças</h1>
-          <p className="text-zinc-500 text-sm mt-1">
-            Controle suas receitas e despesas
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Finanças</h1>
+            <p className="text-zinc-500 text-sm mt-1">
+              Controle suas receitas e despesas
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            onClick={onLogout}
+            aria-label="Sair"
+            className="cursor-pointer text-zinc-600 hover:text-zinc-300 hover:bg-transparent"
+          >
+            <LogOut size={18} />
+          </Button>
         </div>
 
         {mutationError && (

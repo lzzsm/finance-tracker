@@ -1,7 +1,12 @@
+import { useAuth } from "./hooks/useAuth";
 import { useTransactions } from "./hooks/useTransactions";
 import HomePage from "./pages/HomePage";
+import AuthPage from "./pages/AuthPage";
 
-export default function App() {
+// Componente separado que só monta quando o usuário já está autenticado.
+// Isso garante que useTransactions só roda com um token válido —
+// evita o fetch disparar com token null logo após o login.
+function AuthenticatedApp({ token, onLogout }) {
   const {
     transactions,
     loading,
@@ -15,7 +20,7 @@ export default function App() {
     balance,
     monthlyData,
     categoryData,
-  } = useTransactions();
+  } = useTransactions(token);
 
   return (
     <HomePage
@@ -31,6 +36,32 @@ export default function App() {
       balance={balance}
       monthlyData={monthlyData}
       categoryData={categoryData}
+      onLogout={onLogout}
     />
   );
+}
+
+export default function App() {
+  const {
+    token,
+    isAuthenticated,
+    authError,
+    authLoading,
+    login,
+    register,
+    logout,
+  } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <AuthPage
+        onLogin={login}
+        onRegister={register}
+        authError={authError}
+        authLoading={authLoading}
+      />
+    );
+  }
+
+  return <AuthenticatedApp token={token} onLogout={logout} />;
 }

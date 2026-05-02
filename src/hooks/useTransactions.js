@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MONTH_NAMES } from "@/constants/months";
 import { API_URL } from "@/constants/api";
 
-export function useTransactions() {
+export function useTransactions(token) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,7 +11,9 @@ export function useTransactions() {
   useEffect(() => {
     async function fetchTransactions() {
       try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!response.ok) throw new Error("Erro ao buscar transações.");
         const data = await response.json();
         setTransactions(data);
@@ -23,14 +25,17 @@ export function useTransactions() {
     }
 
     fetchTransactions();
-  }, []);
+  }, [token]);
 
   async function addTransaction(description, amount, type, category) {
     setMutationError(null);
     try {
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ description, amount, type, category }),
       });
 
@@ -48,7 +53,10 @@ export function useTransactions() {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ description, amount, type, category }),
       });
 
@@ -66,6 +74,7 @@ export function useTransactions() {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) throw new Error("Erro ao excluir transação.");
