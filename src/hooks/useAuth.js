@@ -8,11 +8,11 @@ export function useAuth() {
 
   const isAuthenticated = !!token;
 
-  async function register(email, password) {
+  async function authenticate(endpoint, email, password) {
     setAuthError(null);
     setAuthLoading(true);
     try {
-      const response = await fetch(`${AUTH_URL}/register`, {
+      const response = await fetch(`${AUTH_URL}/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -36,32 +36,12 @@ export function useAuth() {
     }
   }
 
-  async function login(email, password) {
-    setAuthError(null);
-    setAuthLoading(true);
-    try {
-      const response = await fetch(`${AUTH_URL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+  function register(email, password) {
+    return authenticate("register", email, password);
+  }
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setAuthError(data.error);
-        return false;
-      }
-
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
-      return true;
-    } catch {
-      setAuthError("Erro ao conectar com o servidor.");
-      return false;
-    } finally {
-      setAuthLoading(false);
-    }
+  function login(email, password) {
+    return authenticate("login", email, password);
   }
 
   function logout() {

@@ -30,8 +30,6 @@ export default function CategoryChart({ data }) {
     fill: PIE_COLORS[index % PIE_COLORS.length],
   }));
 
-  // Quando há só uma categoria, um gráfico de pizza não faz sentido visual —
-  // renderiza um card simples com o valor total no lugar
   const isSingleCategory = data.length === 1;
 
   return (
@@ -47,7 +45,6 @@ export default function CategoryChart({ data }) {
             Nenhuma despesa registrada ainda.
           </p>
         ) : isSingleCategory ? (
-          // Fallback pra categoria única — exibe nome e valor sem gráfico
           <div className="flex flex-col items-center justify-center py-8 gap-2">
             <span
               className="text-xs font-medium uppercase tracking-widest"

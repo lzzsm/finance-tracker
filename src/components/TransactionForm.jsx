@@ -14,6 +14,8 @@ import {
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/constants/categories";
 import { transactionSchema } from "@/constants/schemas";
 
+const EMPTY_FORM = { description: "", amount: "", type: "", category: "" };
+
 export default function TransactionForm({ onAdd }) {
   const {
     register,
@@ -24,12 +26,7 @@ export default function TransactionForm({ onAdd }) {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      description: "",
-      amount: "",
-      type: "",
-      category: "",
-    },
+    defaultValues: EMPTY_FORM,
   });
 
   const selectedType = useWatch({ control, name: "type" });
@@ -38,7 +35,7 @@ export default function TransactionForm({ onAdd }) {
 
   function onSubmit(data) {
     onAdd(data.description, data.amount, data.type, data.category);
-    reset();
+    reset(EMPTY_FORM);
   }
 
   return (
