@@ -23,6 +23,11 @@ A personal finance tracking app built progressively — each phase introduces ne
 - **jsonwebtoken** — JWT generation and verification
 - **cors** — cross-origin request handling
 
+**Testing**
+- **Vitest** — test runner integrated with Vite
+- **React Testing Library** — component testing
+- **supertest** — HTTP integration testing for Express routes
+
 ## Features
 
 - User registration and login with JWT authentication
@@ -58,6 +63,8 @@ A personal finance tracking app built progressively — each phase introduces ne
 ```
 finance-tracker/
 ├── server/
+│   ├── __tests__/
+│   │   └── auth.test.js          ← integration tests for auth routes
 │   ├── middleware/
 │   │   └── auth.js               ← JWT verification middleware
 │   ├── routes/
@@ -66,6 +73,11 @@ finance-tracker/
 │   ├── database.js               ← SQLite connection, users and transactions tables
 │   └── index.js                  ← Express server entry point
 └── src/
+    ├── __tests__/
+    │   ├── setup.js              ← jest-dom matchers setup
+    │   ├── formatters.test.js    ← unit tests for formatter functions
+    │   ├── SummaryCards.test.jsx ← component tests
+    │   └── useAuth.test.js       ← hook tests with mocked fetch
     ├── components/
     │   ├── charts/
     │   │   ├── CategoryChart.jsx
@@ -95,6 +107,12 @@ finance-tracker/
 
 ## Getting started
 
+Install node dependencies:
+
+```bash
+npm install
+```
+
 Run both processes in separate terminals:
 
 ```bash
@@ -103,6 +121,12 @@ npm run dev
 
 # backend
 npm run server
+```
+
+Run the test suite:
+
+```bash
+npm test
 ```
 
 The frontend runs on `http://localhost:5173` and the backend on `http://localhost:3000`.
@@ -114,3 +138,4 @@ The frontend runs on `http://localhost:5173` and the backend on `http://localhos
 - [x] Phase 3 — Validation with React Hook Form + Zod
 - [x] Phase 4 — REST API with Node + Express + SQLite
 - [x] Phase 5 — Authentication with JWT
+- [x] Phase 6 — Testing with Vitest and React Testing Library
