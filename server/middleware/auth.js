@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export const JWT_SECRET = "finance_tracker_secret";
+export const JWT_SECRET = process.env.JWT_SECRET;
 
 export function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
