@@ -16,6 +16,11 @@ export default function HomePage({
   loading,
   error,
   mutationError,
+  page,
+  totalPages,
+  filters,
+  setPage,
+  updateFilters,
   addTransaction,
   editTransaction,
   deleteTransaction,
@@ -101,6 +106,11 @@ export default function HomePage({
               transactions={transactions}
               onEdit={setEditingTransaction}
               onDelete={setDeletingId}
+              filters={filters}
+              updateFilters={updateFilters}
+              page={page}
+              totalPages={totalPages}
+              setPage={setPage}
             />
           </TabsContent>
 

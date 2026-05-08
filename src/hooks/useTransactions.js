@@ -8,15 +8,35 @@ export function useTransactions(token) {
   const [error, setError] = useState(null);
   const [mutationError, setMutationError] = useState(null);
 
+  // Estado de paginação
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Estado de filtros
+  const [filters, setFilters] = useState({
+    search: "",
+    type: "",
+    category: "",
+  });
+
   useEffect(() => {
     async function fetchTransactions() {
+      setLoading(true);
       try {
-        const response = await fetch(API_URL, {
+        // Monta query string apenas com filtros preenchidos
+        const params = new URLSearchParams({ page });
+        if (filters.search) params.append("search", filters.search);
+        if (filters.type) params.append("type", filters.type);
+        if (filters.category) params.append("category", filters.category);
+
+        const response = await fetch(`${API_URL}?${params}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) throw new Error("Erro ao buscar transações.");
+
         const data = await response.json();
-        setTransactions(data);
+        setTransactions(data.transactions);
+        setTotalPages(data.totalPages);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -25,7 +45,13 @@ export function useTransactions(token) {
     }
 
     fetchTransactions();
-  }, [token]);
+  }, [token, page, filters]);
+
+  // Quando o filtro muda, volta pra página 1
+  function updateFilters(newFilters) {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setPage(1);
+  }
 
   async function addTransaction(description, amount, type, category) {
     setMutationError(null);
@@ -41,8 +67,9 @@ export function useTransactions(token) {
 
       if (!response.ok) throw new Error("Erro ao adicionar transação.");
 
-      const newTransaction = await response.json();
-      setTransactions((prev) => [newTransaction, ...prev]);
+      await response.json();
+      // Re-busca a página atual pra refletir a nova transação corretamente
+      setFilters((prev) => ({ ...prev }));
     } catch (err) {
       setMutationError(err.message);
     }
@@ -79,12 +106,14 @@ export function useTransactions(token) {
 
       if (!response.ok) throw new Error("Erro ao excluir transação.");
 
-      setTransactions((prev) => prev.filter((t) => t.id !== id));
+      // Re-busca pra atualizar a paginação corretamente após deleção
+      setFilters((prev) => ({ ...prev }));
     } catch (err) {
       setMutationError(err.message);
     }
   }
 
+  // Estado derivado calculado a partir das transações da página atual
   const totalIncome = transactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
@@ -134,6 +163,11 @@ export function useTransactions(token) {
     loading,
     error,
     mutationError,
+    page,
+    totalPages,
+    filters,
+    setPage,
+    updateFilters,
     addTransaction,
     editTransaction,
     deleteTransaction,

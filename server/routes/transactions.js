@@ -4,18 +4,53 @@ import db from "../database.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
+const PAGE_SIZE = 10;
 
-// authMiddleware aplicado no router inteiro —
-// todas as rotas abaixo exigem token válido
 router.use(authMiddleware);
 
 router.get("/", (req, res) => {
-  // req.user.id vem do token decodificado pelo authMiddleware
-  const transactions = db
-    .prepare("SELECT * FROM transactions WHERE user_id = ? ORDER BY date DESC")
-    .all(req.user.id);
+  const { page = 1, type, category, search } = req.query;
+  const offset = (parseInt(page) - 1) * PAGE_SIZE;
 
-  res.json(transactions);
+  // Monta a query dinamicamente baseado nos filtros recebidos
+  // WHERE sempre filtra por user_id — demais condições são opcionais
+  const conditions = ["user_id = ?"];
+  const params = [req.user.id];
+
+  if (type) {
+    conditions.push("type = ?");
+    params.push(type);
+  }
+
+  if (category) {
+    conditions.push("category = ?");
+    params.push(category);
+  }
+
+  if (search) {
+    conditions.push("description LIKE ?");
+    params.push(`%${search}%`);
+  }
+
+  const where = `WHERE ${conditions.join(" AND ")}`;
+
+  // Busca o total de registros com os filtros aplicados — necessário pra calcular total de páginas
+  const total = db
+    .prepare(`SELECT COUNT(*) as count FROM transactions ${where}`)
+    .get(...params).count;
+
+  const transactions = db
+    .prepare(
+      `SELECT * FROM transactions ${where} ORDER BY date DESC LIMIT ? OFFSET ?`,
+    )
+    .all(...params, PAGE_SIZE, offset);
+
+  res.json({
+    transactions,
+    total,
+    page: parseInt(page),
+    totalPages: Math.ceil(total / PAGE_SIZE),
+  });
 });
 
 router.post("/", (req, res) => {
@@ -70,7 +105,6 @@ router.put("/:id", (req, res) => {
       user_id: req.user.id,
     });
 
-  // Filtra por user_id também no WHERE — impede editar transações de outros usuários
   if (result.changes === 0) {
     return res.status(404).json({ error: "Transação não encontrada." });
   }

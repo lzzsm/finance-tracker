@@ -12,6 +12,11 @@ function AuthenticatedApp({ token, onLogout }) {
     loading,
     error,
     mutationError,
+    page,
+    totalPages,
+    filters,
+    setPage,
+    updateFilters,
     addTransaction,
     editTransaction,
     deleteTransaction,
@@ -28,6 +33,11 @@ function AuthenticatedApp({ token, onLogout }) {
       loading={loading}
       error={error}
       mutationError={mutationError}
+      page={page}
+      totalPages={totalPages}
+      filters={filters}
+      setPage={setPage}
+      updateFilters={updateFilters}
       addTransaction={addTransaction}
       editTransaction={editTransaction}
       deleteTransaction={deleteTransaction}

@@ -5,6 +5,7 @@ A personal finance tracking app built progressively — each phase introduces ne
 ## Stack
 
 **Frontend**
+
 - **React 19** — functional components, hooks and React Compiler
 - **Vite** — bundler and dev server
 - **Tailwind CSS v4** — utility-first styling with custom dark theme
@@ -17,13 +18,16 @@ A personal finance tracking app built progressively — each phase introduces ne
 - **uuid** — unique ID generation
 
 **Backend**
+
 - **Node.js + Express** — REST API
 - **SQLite (better-sqlite3)** — local database
 - **bcrypt** — password hashing
 - **jsonwebtoken** — JWT generation and verification
+- **dotenv** — environment variable management
 - **cors** — cross-origin request handling
 
 **Testing**
+
 - **Vitest** — test runner integrated with Vite
 - **React Testing Library** — component testing
 - **supertest** — HTTP integration testing for Express routes
@@ -38,6 +42,9 @@ A personal finance tracking app built progressively — each phase introduces ne
 - Per-field form validation with React Hook Form + Zod
 - Edit transactions via pre-filled modal
 - Delete transactions with AlertDialog confirmation
+- Search transactions by description
+- Filter transactions by type and category
+- Paginated transaction list (10 per page) with page navigation
 - Summary cards with balance, total income and total expenses
 - Dashboard tab with monthly bar chart and category donut chart
 - Fallback UI when only one expense category exists
@@ -45,18 +52,19 @@ A personal finance tracking app built progressively — each phase introduces ne
 
 ## shadcn/ui components
 
-| Component | Usage |
-|---|---|
-| `Card` | Summary cards and section containers |
-| `Button` | Actions and form submits |
-| `Input` | Text and number fields |
-| `Label` | Accessible labels linked to inputs |
-| `Select` | Type and category selection |
-| `Badge` | Category tag on transaction rows |
-| `Separator` | Divider between list items |
-| `Tabs` | Toggle between Transactions and Dashboard |
-| `Dialog` | Edit transaction modal |
-| `AlertDialog` | Delete confirmation modal |
+| Component     | Usage                                     |
+| ------------- | ----------------------------------------- |
+| `Card`        | Summary cards and section containers      |
+| `Button`      | Actions and form submits                  |
+| `Input`       | Text and number fields                    |
+| `Label`       | Accessible labels linked to inputs        |
+| `Select`      | Type and category selection               |
+| `Badge`       | Category tag on transaction rows          |
+| `Separator`   | Divider between list items                |
+| `Tabs`        | Toggle between Transactions and Dashboard |
+| `Dialog`      | Edit transaction modal                    |
+| `AlertDialog` | Delete confirmation modal                 |
+| `Pagination`  | Page navigation on transaction list       |
 
 ## Project structure
 
@@ -107,7 +115,7 @@ finance-tracker/
 
 ## Getting started
 
-Install node dependencies:
+Install dependencies:
 
 ```bash
 npm install
@@ -139,3 +147,4 @@ The frontend runs on `http://localhost:5173` and the backend on `http://localhos
 - [x] Phase 4 — REST API with Node + Express + SQLite
 - [x] Phase 5 — Authentication with JWT
 - [x] Phase 6 — Testing with Vitest and React Testing Library
+- [x] Phase 7 — Environment variables, search, filters and pagination
