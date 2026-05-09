@@ -1,119 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MONTH_NAMES } from "@/constants/months";
 import { API_URL } from "@/constants/api";
 
-export function useTransactions(token) {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [mutationError, setMutationError] = useState(null);
+function buildParams(page, filters) {
+  const params = new URLSearchParams({ page });
+  if (filters.search) params.append("search", filters.search);
+  if (filters.type) params.append("type", filters.type);
+  if (filters.category) params.append("category", filters.category);
+  return params;
+}
 
-  // Estado de paginação
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  // Estado de filtros
-  const [filters, setFilters] = useState({
-    search: "",
-    type: "",
-    category: "",
-  });
-
-  useEffect(() => {
-    async function fetchTransactions() {
-      setLoading(true);
-      try {
-        // Monta query string apenas com filtros preenchidos
-        const params = new URLSearchParams({ page });
-        if (filters.search) params.append("search", filters.search);
-        if (filters.type) params.append("type", filters.type);
-        if (filters.category) params.append("category", filters.category);
-
-        const response = await fetch(`${API_URL}?${params}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error("Erro ao buscar transações.");
-
-        const data = await response.json();
-        setTransactions(data.transactions);
-        setTotalPages(data.totalPages);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchTransactions();
-  }, [token, page, filters]);
-
-  // Quando o filtro muda, volta pra página 1
-  function updateFilters(newFilters) {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-    setPage(1);
-  }
-
-  async function addTransaction(description, amount, type, category) {
-    setMutationError(null);
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ description, amount, type, category }),
-      });
-
-      if (!response.ok) throw new Error("Erro ao adicionar transação.");
-
-      await response.json();
-      // Re-busca a página atual pra refletir a nova transação corretamente
-      setFilters((prev) => ({ ...prev }));
-    } catch (err) {
-      setMutationError(err.message);
-    }
-  }
-
-  async function editTransaction(id, description, amount, type, category) {
-    setMutationError(null);
-    try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ description, amount, type, category }),
-      });
-
-      if (!response.ok) throw new Error("Erro ao editar transação.");
-
-      const updated = await response.json();
-      setTransactions((prev) => prev.map((t) => (t.id === id ? updated : t)));
-    } catch (err) {
-      setMutationError(err.message);
-    }
-  }
-
-  async function deleteTransaction(id) {
-    setMutationError(null);
-    try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error("Erro ao excluir transação.");
-
-      // Re-busca pra atualizar a paginação corretamente após deleção
-      setFilters((prev) => ({ ...prev }));
-    } catch (err) {
-      setMutationError(err.message);
-    }
-  }
-
-  // Estado derivado calculado a partir das transações da página atual
+function deriveStats(transactions) {
   const totalIncome = transactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
@@ -129,15 +27,10 @@ export function useTransactions(token) {
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     const monthName = `${MONTH_NAMES[date.getMonth()]}/${String(date.getFullYear()).slice(2)}`;
 
-    if (!acc[key]) {
-      acc[key] = { mes: monthName, receitas: 0, despesas: 0 };
-    }
+    if (!acc[key]) acc[key] = { mes: monthName, receitas: 0, despesas: 0 };
 
-    if (t.type === "income") {
-      acc[key].receitas += t.amount;
-    } else {
-      acc[key].despesas += t.amount;
-    }
+    if (t.type === "income") acc[key].receitas += t.amount;
+    else acc[key].despesas += t.amount;
 
     return acc;
   }, {});
@@ -158,23 +51,121 @@ export function useTransactions(token) {
     valor,
   }));
 
+  return { totalIncome, totalExpense, balance, monthlyData, categoryData };
+}
+
+export function useTransactions(token) {
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState({
+    search: "",
+    type: "",
+    category: "",
+  });
+  const [mutationError, setMutationError] = useState(null);
+
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["transactions", token, page, filters],
+    queryFn: async () => {
+      const params = buildParams(page, filters);
+      const response = await fetch(`${API_URL}?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Erro ao buscar transações.");
+      return response.json();
+    },
+    // select transforma o dado bruto antes de entregar pro componente.
+    // só re-renderiza se o resultado mudar — o queryClient guarda o raw separado.
+    select: (raw) => ({
+      transactions: raw.transactions,
+      totalPages: raw.totalPages,
+      ...deriveStats(raw.transactions),
+    }),
+  });
+
+  function updateFilters(newFilters) {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setPage(1);
+  }
+
+  function invalidate() {
+    queryClient.invalidateQueries({ queryKey: ["transactions"] });
+  }
+
+  const addMutation = useMutation({
+    mutationFn: async ({ description, amount, type, category }) => {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ description, amount, type, category }),
+      });
+      if (!response.ok) throw new Error("Erro ao adicionar transação.");
+      return response.json();
+    },
+    onSuccess: () => {
+      setMutationError(null);
+      invalidate();
+    },
+    onError: (err) => setMutationError(err.message),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: async ({ id, description, amount, type, category }) => {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ description, amount, type, category }),
+      });
+      if (!response.ok) throw new Error("Erro ao editar transação.");
+      return response.json();
+    },
+    onSuccess: () => {
+      setMutationError(null);
+      invalidate();
+    },
+    onError: (err) => setMutationError(err.message),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Erro ao excluir transação.");
+    },
+    onSuccess: () => {
+      setMutationError(null);
+      invalidate();
+    },
+    onError: (err) => setMutationError(err.message),
+  });
+
   return {
-    transactions,
-    loading,
-    error,
+    transactions: data?.transactions ?? [],
+    totalPages: data?.totalPages ?? 1,
+    totalIncome: data?.totalIncome ?? 0,
+    totalExpense: data?.totalExpense ?? 0,
+    balance: data?.balance ?? 0,
+    monthlyData: data?.monthlyData ?? [],
+    categoryData: data?.categoryData ?? [],
+    loading: isPending,
+    error: isError ? "Erro ao buscar transações." : null,
     mutationError,
     page,
-    totalPages,
     filters,
     setPage,
     updateFilters,
-    addTransaction,
-    editTransaction,
-    deleteTransaction,
-    totalIncome,
-    totalExpense,
-    balance,
-    monthlyData,
-    categoryData,
+    addTransaction: (description, amount, type, category) =>
+      addMutation.mutate({ description, amount, type, category }),
+    editTransaction: (id, description, amount, type, category) =>
+      editMutation.mutate({ id, description, amount, type, category }),
+    deleteTransaction: (id) => deleteMutation.mutate(id),
   };
 }
