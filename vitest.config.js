@@ -12,6 +12,9 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/__tests__/setup.js"],
+    env: {
+      JWT_SECRET: "test-secret",
+    },
   },
   resolve: {
     alias: {

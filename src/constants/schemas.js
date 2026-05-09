@@ -10,8 +10,9 @@ export const transactionSchema = z.object({
     .number({ invalid_type_error: "Valor obrigatório." })
     .positive("O valor deve ser positivo."),
 
+  // Zod v4 substituiu errorMap por error como função
   type: z.enum(["income", "expense"], {
-    errorMap: () => ({ message: "Selecione o tipo." }),
+    error: () => "Selecione o tipo.",
   }),
 
   // z.enum() não aceita array dinâmico em JS puro — usamos refine()

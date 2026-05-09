@@ -13,6 +13,7 @@ A personal finance tracking app built progressively — each phase introduces ne
 - **React Hook Form** — performant form management
 - **Zod** — schema validation
 - **Recharts** — bar and pie charts
+- **TanStack Query (React Query)** — server state management with caching and automatic refetch
 - **lucide-react** — icons
 - **tailwind-merge** — safe Tailwind class merging
 - **uuid** — unique ID generation
@@ -29,7 +30,7 @@ A personal finance tracking app built progressively — each phase introduces ne
 **Testing**
 
 - **Vitest** — test runner integrated with Vite
-- **React Testing Library** — component testing
+- **React Testing Library** — component testing with userEvent
 - **supertest** — HTTP integration testing for Express routes
 
 ## Features
@@ -49,6 +50,7 @@ A personal finance tracking app built progressively — each phase introduces ne
 - Dashboard tab with monthly bar chart and category donut chart
 - Fallback UI when only one expense category exists
 - Inline error feedback for failed API mutations
+- Automatic cache invalidation after mutations via React Query
 
 ## shadcn/ui components
 
@@ -72,7 +74,8 @@ A personal finance tracking app built progressively — each phase introduces ne
 finance-tracker/
 ├── server/
 │   ├── __tests__/
-│   │   └── auth.test.js          ← integration tests for auth routes
+│   │   ├── auth.test.js          ← integration tests for auth routes
+│   │   └── transactions.test.js  ← integration tests for transaction routes
 │   ├── middleware/
 │   │   └── auth.js               ← JWT verification middleware
 │   ├── routes/
@@ -82,10 +85,11 @@ finance-tracker/
 │   └── index.js                  ← Express server entry point
 └── src/
     ├── __tests__/
-    │   ├── setup.js              ← jest-dom matchers setup
-    │   ├── formatters.test.js    ← unit tests for formatter functions
-    │   ├── SummaryCards.test.jsx ← component tests
-    │   └── useAuth.test.js       ← hook tests with mocked fetch
+    │   ├── setup.js                  ← jest-dom matchers setup
+    │   ├── formatters.test.js        ← unit tests for formatter functions
+    │   ├── SummaryCards.test.jsx     ← component tests
+    │   ├── TransactionForm.test.jsx  ← form validation and interaction tests
+    │   └── useAuth.test.js           ← hook tests with mocked fetch
     ├── components/
     │   ├── charts/
     │   │   ├── CategoryChart.jsx
@@ -148,3 +152,4 @@ The frontend runs on `http://localhost:5173` and the backend on `http://localhos
 - [x] Phase 5 — Authentication with JWT
 - [x] Phase 6 — Testing with Vitest and React Testing Library
 - [x] Phase 7 — Environment variables, search, filters and pagination
+- [x] Phase 8 — React Query and expanded test coverage
