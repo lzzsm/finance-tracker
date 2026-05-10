@@ -4,7 +4,7 @@ import { formatCurrency } from "@/lib/formatters";
 
 export default function SummaryCards({ balance, totalIncome, totalExpense }) {
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <Card className="bg-zinc-900 border-zinc-800">
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-medium text-zinc-400 flex items-center gap-2">

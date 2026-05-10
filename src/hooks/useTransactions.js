@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MONTH_NAMES } from "@/constants/months";
 import { API_URL } from "@/constants/api";
@@ -63,11 +63,21 @@ export function useTransactions(token) {
     category: "",
   });
   const [mutationError, setMutationError] = useState(null);
+  const [mutationSuccess, setMutationSuccess] = useState(null);
+
+  // Atraso de 1000ms antes de disparar o fetch de busca — evita requisição a cada tecla
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(filters.search), 1000);
+    return () => clearTimeout(timer);
+  }, [filters.search]);
+
+  const activeFilters = { ...filters, search: debouncedSearch };
 
   const { data, isPending, isError } = useQuery({
-    queryKey: ["transactions", token, page, filters],
+    queryKey: ["transactions", token, page, activeFilters],
     queryFn: async () => {
-      const params = buildParams(page, filters);
+      const params = buildParams(page, activeFilters);
       const response = await fetch(`${API_URL}?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -92,6 +102,11 @@ export function useTransactions(token) {
     queryClient.invalidateQueries({ queryKey: ["transactions"] });
   }
 
+  function showSuccess(message) {
+    setMutationSuccess(message);
+    setMutationError(null);
+  }
+
   const addMutation = useMutation({
     mutationFn: async ({ description, amount, type, category }) => {
       const response = await fetch(API_URL, {
@@ -106,7 +121,7 @@ export function useTransactions(token) {
       return response.json();
     },
     onSuccess: () => {
-      setMutationError(null);
+      showSuccess("Transação adicionada com sucesso.");
       invalidate();
     },
     onError: (err) => setMutationError(err.message),
@@ -126,7 +141,7 @@ export function useTransactions(token) {
       return response.json();
     },
     onSuccess: () => {
-      setMutationError(null);
+      showSuccess("Transação editada com sucesso.");
       invalidate();
     },
     onError: (err) => setMutationError(err.message),
@@ -141,7 +156,7 @@ export function useTransactions(token) {
       if (!response.ok) throw new Error("Erro ao excluir transação.");
     },
     onSuccess: () => {
-      setMutationError(null);
+      showSuccess("Transação excluída.");
       invalidate();
     },
     onError: (err) => setMutationError(err.message),
@@ -158,6 +173,9 @@ export function useTransactions(token) {
     loading: isPending,
     error: isError ? "Erro ao buscar transações." : null,
     mutationError,
+    mutationSuccess,
+    setMutationError,
+    setMutationSuccess,
     page,
     filters,
     setPage,

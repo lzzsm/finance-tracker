@@ -19,10 +19,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/constants/categories";
+import { ALL_CATEGORIES } from "@/constants/schemas";
 import { formatCurrency, formatDate } from "@/lib/formatters";
-
-const ALL_CATEGORIES = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
 
 export default function TransactionList({
   transactions,
@@ -41,7 +39,6 @@ export default function TransactionList({
           Transações
         </CardTitle>
 
-        {/* Barra de busca e filtros */}
         <div className="space-y-3 pt-2">
           <div className="relative">
             <SearchIcon
@@ -186,7 +183,6 @@ export default function TransactionList({
               ))}
             </ul>
 
-            {/* Paginação — só aparece quando há mais de uma página */}
             {totalPages > 1 && (
               <div className="mt-4">
                 <Pagination>

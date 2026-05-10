@@ -46,13 +46,14 @@ A personal finance tracking app built progressively — each phase introduces ne
 - Backend input validation — type and category validated against allowed values
 - Edit transactions via pre-filled modal
 - Delete transactions with AlertDialog confirmation
-- Search transactions by description
+- Search transactions by description with 1s debounce
 - Filter transactions by type and category
 - Paginated transaction list (10 per page) with page navigation
-- Summary cards with balance, total income and total expenses
+- Summary cards with balance, total income and total expenses — responsive on mobile
 - Dashboard tab with monthly bar chart and category donut chart
 - Fallback UI when only one expense category exists
-- Inline error feedback for failed API mutations
+- Toast notifications with auto-dismiss for mutation success and error feedback
+- Skeleton loading screen preserving layout during initial fetch
 - Automatic cache invalidation after mutations via React Query
 
 ## Environment variables
@@ -81,6 +82,8 @@ VITE_API_URL=http://localhost:3000
 | `Dialog`      | Edit transaction modal                    |
 | `AlertDialog` | Delete confirmation modal                 |
 | `Pagination`  | Page navigation on transaction list       |
+| `Skeleton`    | Loading placeholders                      |
+| `Tooltip`     | Logout button label on hover              |
 
 ## Project structure
 
@@ -88,15 +91,15 @@ VITE_API_URL=http://localhost:3000
 finance-tracker/
 ├── server/
 │   ├── __tests__/
-│   │   ├── auth.test.js          ← integration tests for auth routes
-│   │   └── transactions.test.js  ← integration tests for transaction routes
+│   │   ├── auth.test.js              ← integration tests for auth routes
+│   │   └── transactions.test.js      ← integration tests for transaction routes
 │   ├── middleware/
-│   │   └── auth.js               ← JWT verification middleware
+│   │   └── auth.js                   ← JWT verification middleware
 │   ├── routes/
-│   │   ├── auth.js               ← POST /auth/register, POST /auth/login
-│   │   └── transactions.js       ← GET, POST, PUT, DELETE (protected)
-│   ├── database.js               ← SQLite connection, users and transactions tables
-│   └── index.js                  ← Express server entry point
+│   │   ├── auth.js                   ← POST /auth/register, POST /auth/login
+│   │   └── transactions.js           ← GET, POST, PUT, DELETE (protected)
+│   ├── database.js                   ← SQLite connection, users and transactions tables
+│   └── index.js                      ← Express server entry point
 └── src/
     ├── __tests__/
     │   ├── setup.js                  ← jest-dom matchers setup
@@ -108,11 +111,12 @@ finance-tracker/
     │   ├── charts/
     │   │   ├── CategoryChart.jsx
     │   │   └── MonthlyChart.jsx
-    │   ├── ui/                   ← shadcn/ui components
+    │   ├── ui/                       ← shadcn/ui components
     │   ├── DeleteDialog.jsx
     │   ├── EditDialog.jsx
     │   ├── SummaryCards.jsx
     │   ├── TransactionForm.jsx
+    │   ├── TransactionFormFields.jsx ← shared form fields between form and dialog
     │   └── TransactionList.jsx
     ├── constants/
     │   ├── api.js
@@ -174,3 +178,4 @@ The frontend runs on `http://localhost:5173` and the backend on `http://localhos
 - [x] Phase 7 — Environment variables, search, filters and pagination
 - [x] Phase 8 — React Query and expanded test coverage
 - [x] Phase 9 — Security hardening and input validation
+- [x] Phase 10 — UX polish, refactoring and responsiveness
