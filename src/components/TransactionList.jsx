@@ -14,6 +14,7 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -21,6 +22,31 @@ import {
 } from "@/components/ui/pagination";
 import { ALL_CATEGORIES } from "@/constants/schemas";
 import { formatCurrency, formatDate } from "@/lib/formatters";
+
+// Retorna os números de página a exibir com null representando ellipsis.
+// Sempre inclui: primeira, última, página atual e uma adjacente em cada lado.
+function buildPageRange(page, totalPages) {
+  const delta = 1;
+  const range = new Set([1, totalPages]);
+
+  for (
+    let i = Math.max(2, page - delta);
+    i <= Math.min(totalPages - 1, page + delta);
+    i++
+  ) {
+    range.add(i);
+  }
+
+  const sorted = [...range].sort((a, b) => a - b);
+  const result = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push(null);
+    result.push(sorted[i]);
+  }
+
+  return result;
+}
 
 export default function TransactionList({
   transactions,
@@ -32,6 +58,8 @@ export default function TransactionList({
   totalPages,
   setPage,
 }) {
+  const pageRange = buildPageRange(page, totalPages);
+
   return (
     <Card className="bg-zinc-900 border-zinc-800">
       <CardHeader>
@@ -196,8 +224,12 @@ export default function TransactionList({
                       />
                     </PaginationItem>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (p) => (
+                    {pageRange.map((p, i) =>
+                      p === null ? (
+                        <PaginationItem key={`ellipsis-${i}`}>
+                          <PaginationEllipsis className="text-zinc-600" />
+                        </PaginationItem>
+                      ) : (
                         <PaginationItem key={p}>
                           <PaginationLink
                             onClick={() => setPage(p)}

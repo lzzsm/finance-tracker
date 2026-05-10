@@ -48,7 +48,7 @@ A personal finance tracking app built progressively — each phase introduces ne
 - Delete transactions with AlertDialog confirmation
 - Search transactions by description with 1s debounce
 - Filter transactions by type and category
-- Paginated transaction list (10 per page) with page navigation
+- Paginated transaction list (10 per page) with ellipsis navigation
 - Summary cards with balance, total income and total expenses — responsive on mobile
 - Dashboard tab with monthly bar chart and category donut chart
 - Fallback UI when only one expense category exists
@@ -102,24 +102,28 @@ finance-tracker/
 │   └── index.js                      ← Express server entry point
 └── src/
     ├── __tests__/
-    │   ├── setup.js                  ← jest-dom matchers setup
-    │   ├── formatters.test.js        ← unit tests for formatter functions
-    │   ├── SummaryCards.test.jsx     ← component tests
-    │   ├── TransactionForm.test.jsx  ← form validation and interaction tests
-    │   └── useAuth.test.js           ← hook tests with mocked fetch
+    │   ├── setup.js                      ← jest-dom matchers setup
+    │   ├── formatters.test.js            ← unit tests for formatter functions
+    │   ├── HomePage.test.jsx             ← Toast, skeleton and error state tests
+    │   ├── SummaryCards.test.jsx         ← component tests
+    │   ├── TransactionForm.test.jsx      ← form validation and interaction tests
+    │   ├── TransactionFormFields.test.jsx ← shared fields rendering and interaction
+    │   ├── useAuth.test.js              ← hook tests with mocked fetch
+    │   └── useTransactions.test.jsx     ← debounce and mutation state tests
     ├── components/
     │   ├── charts/
     │   │   ├── CategoryChart.jsx
     │   │   └── MonthlyChart.jsx
-    │   ├── ui/                       ← shadcn/ui components
+    │   ├── ui/                           ← shadcn/ui components
     │   ├── DeleteDialog.jsx
     │   ├── EditDialog.jsx
     │   ├── SummaryCards.jsx
     │   ├── TransactionForm.jsx
-    │   ├── TransactionFormFields.jsx ← shared form fields between form and dialog
+    │   ├── TransactionFormFields.jsx     ← shared form fields between form and dialog
     │   └── TransactionList.jsx
     ├── constants/
     │   ├── api.js
+    │   ├── auth.js                       ← TOKEN_KEY constant
     │   ├── categories.js
     │   ├── months.js
     │   ├── schemas.js
@@ -179,3 +183,4 @@ The frontend runs on `http://localhost:5173` and the backend on `http://localhos
 - [x] Phase 8 — React Query and expanded test coverage
 - [x] Phase 9 — Security hardening and input validation
 - [x] Phase 10 — UX polish, refactoring and responsiveness
+- [x] Phase 11 — TOKEN_KEY constant, pagination ellipsis and expanded test coverage

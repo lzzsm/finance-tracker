@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { AUTH_URL } from "@/constants/api";
+import { TOKEN_KEY } from "@/constants/auth";
 
 export function useAuth() {
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
   const [authError, setAuthError] = useState(null);
   const [authLoading, setAuthLoading] = useState(false);
 
@@ -25,7 +26,7 @@ export function useAuth() {
         return false;
       }
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem(TOKEN_KEY, data.token);
       setToken(data.token);
       return true;
     } catch {
@@ -45,7 +46,7 @@ export function useAuth() {
   }
 
   function logout() {
-    localStorage.removeItem("token");
+    localStorage.removeItem(TOKEN_KEY);
     setToken(null);
   }
 
