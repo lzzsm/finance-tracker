@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/constants/categories";
 
-const ALL_CATEGORIES = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
+export const ALL_CATEGORIES = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
 
 export const transactionSchema = z.object({
   description: z.string().min(1, "Descrição obrigatória."),

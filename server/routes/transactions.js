@@ -5,24 +5,43 @@ import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 const PAGE_SIZE = 10;
+const VALID_TYPES = ["income", "expense"];
+const VALID_CATEGORIES = [
+  "Salário",
+  "Freelance",
+  "Investimentos",
+  "Alimentação",
+  "Moradia",
+  "Transporte",
+  "Saúde",
+  "Lazer",
+  "Outros",
+];
+const TRANSACTION_FIELDS = "id, description, amount, type, category, date";
 
 router.use(authMiddleware);
 
 router.get("/", (req, res) => {
-  const { page = 1, type, category, search } = req.query;
-  const offset = (parseInt(page) - 1) * PAGE_SIZE;
+  const { page, type, category, search } = req.query;
 
-  // Monta a query dinamicamente baseado nos filtros recebidos
-  // WHERE sempre filtra por user_id — demais condições são opcionais
+  const p = Math.max(1, parseInt(page) || 1);
+  const offset = (p - 1) * PAGE_SIZE;
+
   const conditions = ["user_id = ?"];
   const params = [req.user.id];
 
   if (type) {
+    if (!VALID_TYPES.includes(type)) {
+      return res.status(400).json({ error: "Tipo inválido." });
+    }
     conditions.push("type = ?");
     params.push(type);
   }
 
   if (category) {
+    if (!VALID_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: "Categoria inválida." });
+    }
     conditions.push("category = ?");
     params.push(category);
   }
@@ -34,21 +53,20 @@ router.get("/", (req, res) => {
 
   const where = `WHERE ${conditions.join(" AND ")}`;
 
-  // Busca o total de registros com os filtros aplicados — necessário pra calcular total de páginas
   const total = db
     .prepare(`SELECT COUNT(*) as count FROM transactions ${where}`)
     .get(...params).count;
 
   const transactions = db
     .prepare(
-      `SELECT * FROM transactions ${where} ORDER BY date DESC LIMIT ? OFFSET ?`,
+      `SELECT ${TRANSACTION_FIELDS} FROM transactions ${where} ORDER BY date DESC LIMIT ? OFFSET ?`,
     )
     .all(...params, PAGE_SIZE, offset);
 
   res.json({
     transactions,
     total,
-    page: parseInt(page),
+    page: p,
     totalPages: Math.ceil(total / PAGE_SIZE),
   });
 });
@@ -58,6 +76,14 @@ router.post("/", (req, res) => {
 
   if (!description || !amount || !type || !category) {
     return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+  }
+
+  if (!VALID_TYPES.includes(type)) {
+    return res.status(400).json({ error: "Tipo inválido." });
+  }
+
+  if (!VALID_CATEGORIES.includes(category)) {
+    return res.status(400).json({ error: "Categoria inválida." });
   }
 
   const transaction = {
@@ -71,13 +97,12 @@ router.post("/", (req, res) => {
   };
 
   db.prepare(
-    `
-    INSERT INTO transactions (id, description, amount, type, category, date, user_id)
-    VALUES (@id, @description, @amount, @type, @category, @date, @user_id)
-  `,
+    `INSERT INTO transactions (id, description, amount, type, category, date, user_id)
+     VALUES (@id, @description, @amount, @type, @category, @date, @user_id)`,
   ).run(transaction);
 
-  res.status(201).json(transaction);
+  const { user_id: _, ...response } = transaction;
+  res.status(201).json(response);
 });
 
 router.put("/:id", (req, res) => {
@@ -88,13 +113,19 @@ router.put("/:id", (req, res) => {
     return res.status(400).json({ error: "Todos os campos são obrigatórios." });
   }
 
+  if (!VALID_TYPES.includes(type)) {
+    return res.status(400).json({ error: "Tipo inválido." });
+  }
+
+  if (!VALID_CATEGORIES.includes(category)) {
+    return res.status(400).json({ error: "Categoria inválida." });
+  }
+
   const result = db
     .prepare(
-      `
-    UPDATE transactions
-    SET description = @description, amount = @amount, type = @type, category = @category
-    WHERE id = @id AND user_id = @user_id
-  `,
+      `UPDATE transactions
+       SET description = @description, amount = @amount, type = @type, category = @category
+       WHERE id = @id AND user_id = @user_id`,
     )
     .run({
       id,
@@ -109,7 +140,10 @@ router.put("/:id", (req, res) => {
     return res.status(404).json({ error: "Transação não encontrada." });
   }
 
-  const updated = db.prepare("SELECT * FROM transactions WHERE id = ?").get(id);
+  const updated = db
+    .prepare(`SELECT ${TRANSACTION_FIELDS} FROM transactions WHERE id = ?`)
+    .get(id);
+
   res.json(updated);
 });
 

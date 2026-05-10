@@ -24,8 +24,9 @@ A personal finance tracking app built progressively — each phase introduces ne
 - **SQLite (better-sqlite3)** — local database
 - **bcrypt** — password hashing
 - **jsonwebtoken** — JWT generation and verification
+- **express-rate-limit** — brute force protection on auth routes
 - **dotenv** — environment variable management
-- **cors** — cross-origin request handling
+- **cors** — restricted cross-origin request handling
 
 **Testing**
 
@@ -39,8 +40,10 @@ A personal finance tracking app built progressively — each phase introduces ne
 - Password hashing with bcrypt — passwords never stored in plain text
 - Protected routes — all transaction endpoints require a valid token
 - Per-user data isolation — each user only sees their own transactions
+- Rate limiting on auth routes — 10 attempts per 15 minutes
 - Add transactions with description, amount, type (income/expense) and category
 - Per-field form validation with React Hook Form + Zod
+- Backend input validation — type and category validated against allowed values
 - Edit transactions via pre-filled modal
 - Delete transactions with AlertDialog confirmation
 - Search transactions by description
@@ -51,6 +54,17 @@ A personal finance tracking app built progressively — each phase introduces ne
 - Fallback UI when only one expense category exists
 - Inline error feedback for failed API mutations
 - Automatic cache invalidation after mutations via React Query
+
+## Environment variables
+
+Copy `.env.example` to `.env` and fill in the values:
+
+```
+JWT_SECRET=your_secret_key_here
+PORT=3000
+ALLOWED_ORIGIN=http://localhost:5173
+VITE_API_URL=http://localhost:3000
+```
 
 ## shadcn/ui components
 
@@ -125,6 +139,12 @@ Install dependencies:
 npm install
 ```
 
+Copy the environment file and fill in the values:
+
+```bash
+cp .env.example .env
+```
+
 Run both processes in separate terminals:
 
 ```bash
@@ -153,3 +173,4 @@ The frontend runs on `http://localhost:5173` and the backend on `http://localhos
 - [x] Phase 6 — Testing with Vitest and React Testing Library
 - [x] Phase 7 — Environment variables, search, filters and pagination
 - [x] Phase 8 — React Query and expanded test coverage
+- [x] Phase 9 — Security hardening and input validation
